@@ -35,6 +35,7 @@ net_device_register(struct net_device *dev)
     devices = dev;
     infof("registered, dev=%s, type=0x%04x", dev->name, dev->type);
     return 0;
+
 }
 
 static int
@@ -81,7 +82,7 @@ net_device_output(struct net_device *dev, uint16_t type, const uint8_t *data, si
         return -1;
     }
     if (len > dev->mtu) {
-        errorf("too long, dev=%s, mtu=%u, len=%zu", dev->name, dev->mtu, len);
+        errorf("too large, dev=%s, len=%zu, mtu=%zu", dev->name, dev->mtu, len);
         return -1;
     }
     debugf("dev=%s, type=0x%04x, len=%zu", dev->name, type, len);
@@ -106,10 +107,6 @@ net_run(void)
 {
     struct net_device *dev;
 
-    if (intr_run() == -1) {
-        errorf("intr_run() failure");
-        return -1;
-    }
     debugf("open all devices...");
     for (dev = devices; dev; dev = dev->next) {
         net_device_open(dev);
@@ -127,17 +124,13 @@ net_shutdown(void)
     for (dev = devices; dev; dev = dev->next) {
         net_device_close(dev);
     }
-    intr_shutdown();
     debugf("shutting down");
+
 }
 
 int
 net_init(void)
 {
-    if (intr_init() == -1) {
-        errorf("intr_init() failure");
-        return -1;
-    }
     infof("initialized");
     return 0;
 }
